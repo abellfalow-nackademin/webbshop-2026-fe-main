@@ -59,14 +59,23 @@ function createProductCard(product) {
   element.innerHTML = `
     ${imageSection}
     <div class="product-card__body">
-      <h3>${product.name}</h3>
-      <p class="product-card__price">$${product.price.toFixed(2)}</p>
-      <button class="add-to-cart-btn">Add to Cart</button>
+      <div class=""product-card__info>
+        <h3>${product.name}</h3>
+        <p class="product-card__price">$${product.price.toFixed(2)}</p>
+      </div>
+      <div class="product-card__buttons">
+        <button class="show-on-map-btn">Show On Map</button>
+        <button class="send-request-btn">Send Request</button>
+      </div>
     </div>
   `;
 
-  element.querySelector(".add-to-cart-btn").addEventListener("click", () => {
-    alert(`Adding ${product.name} to cart\nFunctionality not implemented yet`);
+  element.querySelector(".show-on-map-btn").addEventListener("click", () => {
+    alert(`Functionality not implemented yet`);
+  });
+
+  element.querySelector(".send-request-btn").addEventListener("click", () => {
+    alert(`Functionality not implemented yet`);
   });
 
   return element;
