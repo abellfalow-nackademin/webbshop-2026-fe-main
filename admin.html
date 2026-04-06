@@ -36,20 +36,16 @@
           <input type="text" id="name" required />
         </div>
         <div class="admin-form-row">
-          <label for="price">Price</label>
-          <input type="number" id="price" step="0.01" min="0" required />
+          <label for="price">Coordinates</label>
+          <input type="number" id="price" step="0.01" min="0" max="3" required />
         </div>
         <div class="admin-form-row">
-          <label for="stock">Stock</label>
+          <label for="stock">Light Level</label>
           <input type="number" id="stock" min="0" required />
         </div>
         <div class="admin-form-row">
           <label for="image">Image URL</label>
           <input type="url" id="image" required />
-        </div>
-        <div class="admin-form-row">
-          <label for="slug">Slug</label>
-          <input type="text" id="slug" required placeholder="e.g. organic-tomatoes" />
         </div>
         <button type="submit">Create Product</button>
       </form>
