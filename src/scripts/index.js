@@ -80,3 +80,14 @@ function createProductCard(product) {
 
   return element;
 }
+
+var map = L.map('map').setView([59.3293, 18.0686], 12);
+
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(map);
+
+var marker = L.marker([59.3293, 18.0686]).addTo(map);
+
+marker.bindPopup(`<h3>Organic Tomatoes</h3>`).openPopup();
