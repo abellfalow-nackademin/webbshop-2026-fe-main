@@ -20,7 +20,30 @@
     </header>
 
     <main>
-        <h1>Profile</h1>
+        <h1 style="justify-self: center;">Profile</h1>
+        <form id="uploadProductForm" class="profile-form">
+          <div class="profile-form-row">
+            <label for="name">Name</label>
+            <input type="text" id="name" required />
+          </div>
+          <div class="profile-form-row">
+            <label for="Coordinates">Coordinates</label>
+            <input type="text" id="name" required />
+          </div>
+            <div class="profile-form-row">
+            <label for="image">Image URL</label>
+            <input type="text" id="image" required />
+          </div>
+          <div class="profile-form-row">
+            <label for="lightLevel">Ligth Level</label>
+            <input type="text" id="lightLevel" required />
+          </div>
+          <button id="upload">Upload</button>
+      </form>
+
+      <div class="plant-section">
+        <h1>My Plants</h1>
+      </div>
     </main>
 
     <!-- FOOTER -->
