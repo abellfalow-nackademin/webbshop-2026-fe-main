@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registrera - Plot Twist</title>
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/register.css" />
+  </head>
+  <body>
+    <!-- HEADER -->
+    <div id="navbar-container"></div>
+
+    <!-- HUVUDINNEHÅLL -->
+    <main class="main-content">
+      <h1>Registrera</h1>
+      <div id="register-container" class="register-wrapper">
+        <form id="registerForm" class="register-form">
+          <div class="form-group">
+            <label for="name">Namn</label>
+            <input type="text" id="name" required />
+          </div>
+          <div class="form-group">
+            <label for="email">E-post</label>
+            <input type="email" id="email" required />
+          </div>
+          <div class="form-group">
+            <label for="password">Lösenord</label>
+            <input type="password" id="password" required />
+          </div>
+          <button type="submit">Registrera</button>
+        </form>
+      </div>
+    </main>
+
+    <!-- FOOTER -->
+    <div id="footer-container"></div>
+
+    <script type="module" src="../src/scripts/register.js"></script>
+    <script type="module" src="../src/components/navbar.js"></script>
+    <script type="module" src="../src/components/footer.js"></script>
+  </body>
+</html>

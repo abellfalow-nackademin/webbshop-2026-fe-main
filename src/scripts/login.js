@@ -1,72 +1,94 @@
-document.addEventListener("DOMContentLoaded", () => {
-  initLogin();
-  renderProfile();
-});
+/**
+ * Inloggningsskript
+ * Hanterar inloggningsformuläret och verifierar användaren
+ */
 
-function initLogin() {
+import { login, logout } from "../utils/auth.js";
+import { getUserInfo } from "../utils/auth.js";
+
+// Initiera sidan när den laddas
+document.addEventListener("DOMContentLoaded", initLoginPage);
+
+/**
+ * Initiera inloggningssidan
+ */
+function initLoginPage() {
   const loginForm = document.getElementById("loginForm");
-  if (!loginForm) return;
 
-  loginForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    handleLogin();
-  });
+  if (!loginForm) {
+    console.error("Kunde inte hitta inloggningsformuläret");
+    return;
+  }
+
+  // Lägg till event listener för formulärskick
+  loginForm.addEventListener("submit", handleLoginSubmit);
 }
 
-async function handleLogin() {
-    const email = document.getElementById("loginEmail").value;
-    const password = document.getElementById("loginPassword").value;
+/**
+ * Hantera skickande av inloggningsformuläret
+ * @param {Event} event - Skicka-händelsen
+ */
+async function handleLoginSubmit(event) {
+  event.preventDefault();
 
-    try {
-        const response = await fetch('https://plot-twist-neon.vercel.app/api/auth/login', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-        email,
-        password
-        })
-    })
-    const data = await response.json();
-    if (data.success === true) {
-        localStorage.setItem("user", JSON.stringify(data));
-        console.log("Login Succesful!")
-        renderProfile();
-        window.location.href = "index.html";
+  // Samla data från formuläret
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+
+  // Validera data
+  if (!validateForm(email, password)) {
+    return;
+  }
+
+  // Inaktivera knappen under bearbetning
+  const submitButton = document.querySelector('button[type="submit"]');
+  const originalText = submitButton.textContent;
+  submitButton.disabled = true;
+  submitButton.textContent = "Loggar in...";
+
+  try {
+    // Skicka inloggningsförfrågan
+    const response = await login(email, password);
+
+    if (response.success) {
+      // Lyckad inloggning
+      alert("Du har loggat in framgångsrikt!");
+      
+      // Omdirigera till startsidan
+      window.location.href = "index.html";
     } else {
-        console.log(data.message)
+      // Misslyckad inloggning
+      alert(response.message || "Inloggningen misslyckades. Kontrollera dina uppgifter.");
     }
-    } catch (error) {
-        console.log(error);
-    }
+  } catch (error) {
+    console.error("Fel vid inloggning:", error);
+    alert("Ett fel uppstod vid inloggning. Försök igen.");
+  } finally {
+    // Återaktivera knappen
+    submitButton.disabled = false;
+    submitButton.textContent = originalText;
+  }
 }
 
-function renderProfile() {
-const user = JSON.parse(localStorage.getItem("user"));
-if (!user) return;
-const navLinks = document.querySelector(".nav-links");
-const thirdItem = navLinks.children[2];
-const registerNav = navLinks.children[1];
+/**
+ * Validera formulärdata
+ * @param {string} email - E-postadress
+ * @param {string} password - Lösenord
+ * @returns {boolean} true om datan är giltig
+ */
+function validateForm(email, password) {
+  // Validera e-post
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || !emailRegex.test(email)) {
+    alert("Vänligen ange en giltig e-postadress");
+    return false;
+  }
 
-thirdItem.innerHTML = `
-    <a href="profile.html">Profile</a>
-`;
+  // Validera lösenord
+  if (!password || password.length < 1) {
+    alert("Vänligen ange ditt lösenord");
+    return false;
+  }
 
-registerNav.style.display = "none";
-
-if (user.role === "admin") {
-navLinks.innerHTML += `
-    <li><a href="admin.html">Admin</a></li>
-`;
-}
-
-navLinks.innerHTML += `
-<li><button id="logoutBtn">Logout</button></li>
-`;
-
-document.getElementById("logoutBtn").addEventListener("click", () => {
-localStorage.removeItem("user");
-location.reload();
-});
+  return true;
 }

@@ -1,0 +1,143 @@
+  <!DOCTYPE html>
+  <html lang="sv">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Profil - Plot Twist</title>
+      <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""
+      />
+      <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""
+      ></script>
+      <link rel="stylesheet" href="css/common.css" />
+      <link rel="stylesheet" href="css/profile.css" />
+    </head>
+  <body>
+    <!-- HEADER -->
+    <div id="navbar-container"></div>
+
+    <main class="profile-container">
+      <div class="profile-content">
+        <!-- Användarinformation -->
+        <section class="user-section">
+          <h1>Min Profil</h1>
+          <div id="user-info">
+            <p>Laddar användarinformation...</p>
+          </div>
+        </section>
+
+        <!-- Växtformulär -->
+        <section class="plant-form-section">
+          <div class="form-header">
+            <h2 id="form-title">Lägg till ny växt</h2>
+            <button id="cancel-edit-btn" class="btn-cancel" style="display: none;">
+              ✕ Avbryt
+            </button>
+          </div>
+          
+          <form id="plant-form" class="plant-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="plant-name">Växtens namn *</label>
+                <input 
+                  type="text" 
+                  id="plant-name" 
+                  required 
+                  placeholder="T.ex. Monstera"
+                />
+              </div>
+              <div class="form-group">
+                <label for="plant-status">Status *</label>
+                <select id="plant-status" required>
+                  <option value="available">✅ Tillgänglig</option>
+                  <option value="notAvailable">❌ Inte tillgänglig</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="plant-description">Beskrivning *</label>
+              <textarea 
+                id="plant-description" 
+                rows="3" 
+                required 
+                placeholder="Beskriv din växt..."
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="plant-image-url">Bild-URL (valfritt)</label>
+              <input 
+                type="url" 
+                id="plant-image-url" 
+                placeholder="https://..."
+              />
+              <small>Lämna tomt för att använda standardbild</small>
+            </div>
+
+            <div class="form-group">
+              <label>Plats på kartan *</label>
+              <div id="location-map" style="height: 300px; width: 100%; border-radius: 8px; margin-bottom: 10px;"></div>
+              <input type="hidden" id="plant-latitude" />
+              <input type="hidden" id="plant-longitude" />
+              <small>Klicka på kartan för att markera din växts plats</small>
+            </div>
+
+            <button type="submit" class="btn-submit">
+              🌱 Lägg till växt
+            </button>
+          </form>
+        </section>
+
+        <!-- Användarens växter -->
+        <section class="plants-section">
+          <h2>Mina växter</h2>
+          <div id="user-plants">
+            <p>Laddar växter...</p>
+          </div>
+        </section>
+
+        <!-- Bytesförfrågningar (Kommer senare) -->
+        <section class="requests-section">
+          <h2>Bytesförfrågningar</h2>
+          <div class="requests-container">
+            <div class="requests-placeholder">
+              <p>🔄</p>
+              <h3>Kommer snart</h3>
+              <p>Här kommer du att se dina skickade och mottagna bytesförfrågningar.</p>
+            </div>
+            
+            <div class="request-sections">
+              <div class="request-section">
+                <h3>📤 Skickade förfrågningar</h3>
+                <div class="requests-list" id="sent-requests">
+                  <p class="empty-state">Inga skickade förfrågningar än.</p>
+                </div>
+              </div>
+              
+              <div class="request-section">
+                <h3>📥 Mottagna förfrågningar</h3>
+                <div class="requests-list" id="received-requests">
+                  <p class="empty-state">Inga mottagna förfrågningar än.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- FOOTER -->
+    <div id="footer-container"></div>
+
+    <script type="module" src="../src/scripts/profile.js"></script>
+    <script type="module" src="../src/components/navbar.js"></script>
+    <script type="module" src="../src/components/footer.js"></script>
+  </body>
+</html>

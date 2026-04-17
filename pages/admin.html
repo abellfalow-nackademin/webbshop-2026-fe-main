@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin - Plot Twist</title>
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/admin.css" />
+  </head>
+  <body>
+    <!-- HEADER -->
+    <div id="navbar-container"></div>
+
+    <div class="admin-panel">
+      <button class="panel-btns">Produkter</button>
+      <button class="panel-btns">Användare</button>
+      <button class="panel-btns">Info</button>
+    </div>
+
+    <main class="admin-main">
+      <h1>Admin – Skapa Produkt</h1>
+
+      <form id="createProductForm" class="admin-form">
+        <div class="admin-form-row">
+          <label for="name">Namn</label>
+          <input type="text" id="name" required />
+        </div>
+        <div class="admin-form-row">
+          <label for="price">Koordinater</label>
+          <input type="number" id="price" step="0.01" min="0" max="3" required />
+        </div>
+        <div class="admin-form-row">
+          <label for="stock">Ljusnivå</label>
+          <input type="number" id="stock" min="0" required />
+        </div>
+        <div class="admin-form-row">
+          <label for="image">Bild-URL</label>
+          <input type="url" id="image" required />
+        </div>
+        <button type="submit">Skapa Produkt</button>
+      </form>
+
+      <h2>Produkter</h2>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Namn</th>
+              <th>Pris</th>
+              <th>Lager</th>
+              <th>Slug</th>
+            </tr>
+          </thead>
+          <tbody id="productsTableBody">
+            <tr><td colspan="4">Laddar...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- FOOTER -->
+    <div id="footer-container"></div>
+
+    <script type="module" src="../src/scripts/admin.js"></script>
+    <script type="module" src="../src/scripts/login.js"></script>
+    <script type="module" src="../src/components/navbar.js"></script>
+    <script type="module" src="../src/components/footer.js"></script>
+  </body>
+</html>
