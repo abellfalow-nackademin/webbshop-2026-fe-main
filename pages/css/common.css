@@ -248,9 +248,12 @@ main {
   aspect-ratio: 1;
   object-fit: cover;
   background: var(--color-bg-alt);
+  border-radius: var(--radius-md);
 }
 
 .product-card__image-placeholder {
+  margin-left: 8px;
+  align-self: center;
   aspect-ratio: 1;
   background: #d9d9d9;
   display: flex;
@@ -270,6 +273,7 @@ main {
 
 .product-card__info {
   display: flex;
+  flex-direction: column;
   height: 100%;
   flex: 1;
 }
