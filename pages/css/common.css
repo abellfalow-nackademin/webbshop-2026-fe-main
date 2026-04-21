@@ -720,6 +720,7 @@ main {
 }
 
 .marker-popup {
+  padding-right: 1rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -751,3 +752,5 @@ main {
   font-family: var(--font-body);
   margin: 10px 0 5px 0;
 }
+
+.activeArea { position: absolute; top: 50px; left: 50px; right: 50px; height: 200px; }

@@ -323,6 +323,13 @@ function addMarkerToMap(plant) {
 
   marker.bindPopup(popupContent);
   markers.push(marker);
+  marker.on("popupopen", function (e) {
+    map.panTo([latitude, longitude], { animate: true });
+
+    setTimeout(() => {
+      map.panBy([0, -150], { animate: true });
+    }, 300); // justera timing här
+  });
 }
 
 /**
