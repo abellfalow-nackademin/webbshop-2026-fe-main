@@ -41,7 +41,10 @@ export async function loadNavbar() {
     const navbarHTML = `
       <header class="site-header">
         <nav class="main-nav">
+        <div>
+          <img style="width: 13px; margin: 0 3px 0 5px;" src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png" alt="">
           <a href="index.html" class="logo">Plot Twist</a>
+          </div>
           <ul class="nav-links">
             <li><a href="index.html">Hem</a></li>
             ${authLinks}

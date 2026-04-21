@@ -150,6 +150,16 @@ function initMap() {
   // Skapa karta centrerad på växtens plats
   map = L.map("map").setView([latitude, longitude], 14);
 
+  // Styla Marker
+  var greenIcon = new L.Icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  });
+
   // Lägg till kartlager (OpenStreetMap)
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -157,10 +167,17 @@ function initMap() {
   }).addTo(map);
 
   // Lägg till markör
-  const marker = L.marker([latitude, longitude]).addTo(map);
+  const marker = L.marker([latitude, longitude], {icon: greenIcon}).addTo(map);
 
   const plantName = plantDetails.plantName || plantDetails.name || "Växt";
-  marker.bindPopup(`<b>${plantName}</b>`);
+  console.log(plantDetails.description);
+  marker.bindPopup(`
+    <div class="marker-popup">
+    <img src="${plantDetails.imageUrl}" alt="${plantName}" style="max-width: 150px; border-radius: 8px;" />
+    <h4>${plantName}</h4>
+    <p>${plantDetails.description}</p>
+    </div
+    `);
 }
 
 /**

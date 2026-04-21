@@ -249,8 +249,8 @@ function createPlantCard(plant) {
     <div class="product-card__body">
       <div class="product-card__info">
         <h3>${plantName}</h3>
-        <p class="product-card__status" style="font-size: 0.85rem; margin-top: 0.5rem; color: ${status === 'available' ? '#28a745' : '#6c757d'};">
-          Status: ${status === 'available' ? '✅ Tillgänglig' : '❌ Inte tillgänglig'}
+        <p class="product-card__status" style="font-size: 0.85rem; font-weight: bold; margin-top: 0.5rem; color: ${status === 'available' ? '#28a745' : '#6c757d'};">
+          ${status === 'available' ? 'TILLGÄNGLIG' : 'EJ TILLGÄNGLIG'}
         </p>
       </div>
       <div class="product-card__buttons">
@@ -290,7 +290,17 @@ function addMarkerToMap(plant) {
     return;
   }
 
-  const marker = L.marker([latitude, longitude]).addTo(map);
+
+  var greenIcon = new L.Icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  });
+
+  const marker = L.marker([latitude, longitude], {icon: greenIcon}).addTo(map);
 
   // Spara växt-ID i markören för att kunna identifiera den senare
   marker.plantId = plant._id || plant.id;
@@ -302,9 +312,9 @@ function addMarkerToMap(plant) {
 
   const popupContent = `
     <div class="marker-popup">
+      ${imageUrl && imageUrl !== "test2" ? `<img src="${imageUrl}" alt="${plantName}" style="max-width: 150px; border-radius: 8px;" />` : ""}
       <h4>${plantName}</h4>
       <p>${description}</p>
-      ${imageUrl && imageUrl !== "test2" ? `<img src="${imageUrl}" alt="${plantName}" style="max-width: 150px; border-radius: 8px;" />` : ""}
       <button onclick="showPlantDetails('${plant._id || plant.id}')" style="margin-top: 8px; padding: 4px 8px; background: #2d5a3d; color: white; border: none; border-radius: 4px; cursor: pointer;">
         Se detaljer
       </button>

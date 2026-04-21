@@ -714,3 +714,40 @@ main {
     font-size: 1.5rem;
   }
 }
+
+.leaflet-popup-content {
+  width: auto;
+}
+
+.marker-popup {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0;
+}
+
+.marker-popup img {
+  object-fit: cover;
+  width: 150px;
+  height: 120px;
+}
+
+.leaflet-popup-content {
+  width: 10rem !important;
+  margin: 13px 10px 13px 20px;
+}
+
+.marker-popup h4 {
+  margin: 10px 0 0 0;
+  text-align: left;
+  font-family: var(--font-heading);
+}
+
+.marker-popup button {
+  font-family: var(--font-heading);
+}
+
+.marker-popup p {
+  font-family: var(--font-body);
+  margin: 10px 0 5px 0;
+}
