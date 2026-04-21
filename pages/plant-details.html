@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Växtdetaljer - Plot Twist</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/plant-details.css" />
+  </head>
+  <body>
+    <!-- HEADER -->
+    <div id="navbar-container"></div>
+
+    <main class="plant-details-container">
+      <!-- Laddningsskärm -->
+      <div id="loading" class="loading-screen">
+        <div class="spinner"></div>
+        <p>Laddar växtinformation...</p>
+      </div>
+
+      <!-- Felmeddelande -->
+      <div id="error" class="error-screen" style="display: none;">
+        <h2>⚠️ Ett fel uppstod</h2>
+        <p id="error-message">Kunde inte ladda växtinformationen.</p>
+        <button onclick="history.back()" class="btn-back">⬅️ Gå tillbaka</button>
+      </div>
+
+      <!-- Växtdetaljer -->
+      <div id="plant-details" class="plant-details-content" style="display: none;">
+        <!-- Växtinformation -->
+        <section class="plant-info-section">
+          <div class="plant-header">
+            <h1 id="plant-name">Växtens namn</h1>
+            <span id="plant-status" class="status-badge">Status</span>
+          </div>
+          
+          <div class="plant-image-container">
+            <img id="plant-image" src="" alt="Växtbild" />
+          </div>
+          
+          <div class="plant-description">
+            <h2>Beskrivning</h2>
+            <p id="plant-desc">Beskrivning här...</p>
+          </div>
+
+          <div class="plant-meta">
+            <div class="meta-item">
+              <span class="meta-label">💡 Ljuskrav:</span>
+              <span id="plant-light">Ej angiven</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">📍 Plats:</span>
+              <span id="plant-location">Ej angiven</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Karta -->
+        <section class="map-section">
+          <h2>📍 Plats</h2>
+          <div id="map"></div>
+        </section>
+
+        <!-- Bytesförfrågan -->
+        <section id="exchange-section" class="exchange-section">
+          <h2>🔄 Skicka bytesförfrågan</h2>
+          <p>Välj en av dina växter att byta med:</p>
+          
+          <div id="user-plants-select" class="user-plants-select">
+            <p>Laddar dina växter...</p>
+          </div>
+          
+          <button id="send-request-btn" class="btn-send-request" disabled>
+            📤 Skicka bytesförfrågan
+          </button>
+        </section>
+      </div>
+    </main>
+
+    <!-- FOOTER -->
+    <div id="footer-container"></div>
+
+    <!-- JAVASCRIPT -->
+    <script type="module" src="../src/scripts/plant-details.js"></script>
+    <script type="module" src="../src/components/navbar.js"></script>
+    <script type="module" src="../src/components/footer.js"></script>
+  </body>
+</html>

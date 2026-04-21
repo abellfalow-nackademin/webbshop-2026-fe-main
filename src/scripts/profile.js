@@ -1,9 +1,9 @@
 /**
  * Profilsidans skript
- * Hanterar visning av användarinformation och användarens växter
+ * Hanterar visning av användarinformation, användarens växter och trades
  */
 
-import { getUserInfo, getUserPlants, createPlant, updatePlant, deletePlant } from "../utils/productsApi.js";
+import { getUserInfo, getUserPlants, createPlant, updatePlant, deletePlant, getMyTrades, acceptTrade , rejectTrade, cancelTrade, completeTrade } from "../utils/productsApi.js";
 import { logout, isLoggedIn } from "../utils/auth.js";
 
 // Globala variabler
@@ -14,6 +14,7 @@ let map = null;
 let marker = null;
 let selectedLatitude = null;
 let selectedLongitude = null;
+let myTrades = null;
 
 // Initiera sidan när den laddas
 document.addEventListener("DOMContentLoaded", initProfilePage);
@@ -45,9 +46,371 @@ async function initProfilePage() {
     // Konfigurera logga ut-knapp
     setupLogout();
 
+    // Hämta och visa bytesförfrågningar
+    await loadExchangeRequests();
+
   } catch (error) {
     console.error("Fel vid initiering av profilsidan:", error);
     displayError("Kunde inte ladda profilen. Försök igen senare.");
+  }
+}
+
+/**
+ * Hämta och visa trades
+ */
+async function loadExchangeRequests() {
+  try {
+    console.log("🔄 Hämtar trades...");
+
+    myTrades = await getMyTrades();
+1
+    console.log("✅ Trades hämtade:", myTrades);
+
+    displayTrades(myTrades);
+
+  } catch (error) {
+    console.error("❌ Fel vid hämtning av trades:", error);
+    
+    const requestsContainer = document.getElementById("sent-requests");
+    const tradesContainer = document.getElementById("received-requests");
+    
+    if (requestsContainer) {
+      requestsContainer.innerHTML = `<p class="error-message">Kunde inte ladda dina förfrågningar.</p>`;
+    }
+    
+    if (tradesContainer) {
+      tradesContainer.innerHTML = `<p class="error-message">Kunde inte ladda dina trades.</p>`;
+    }
+  }
+}
+
+/**
+ * Visa trades
+ * @param {object} data - Objekt med requests och trades arrays
+ */
+function displayTrades(data) {
+  console.log("🎨 displayTrades called with data:", data);
+  
+  const requestsContainer = document.getElementById("sent-requests");
+  const tradesContainer = document.getElementById("received-requests");
+  const historyContainer = document.getElementById("history-requests");
+  const placeholder = document.querySelector(".requests-placeholder");
+
+  console.log("🔍 Containers found:", {
+    requestsContainer: !!requestsContainer,
+    tradesContainer: !!tradesContainer,
+    historyContainer: !!historyContainer,
+    placeholder: !!placeholder
+  });
+
+  if (!requestsContainer || !tradesContainer || !historyContainer) {
+    console.error("❌ Kunde inte hitta containers");
+    return;
+  }
+
+  // Dölj placeholder om det finns data
+  console.log("📊 Data lengths:", {
+    requests: data.requests?.length || 0,
+    trades: data.trades?.length || 0
+  });
+
+  if (placeholder && (data.requests?.length > 0 || data.trades?.length > 0)) {
+    console.log("✅ Hiding placeholder, showing data");
+    placeholder.style.display = "none";
+  } else {
+    console.log("ℹ️ No data to show, keeping placeholder");
+  }
+
+  // Separera requests baserat på status
+  const activeRequests = [];
+  const historyRequests = [];
+  
+  data.requests?.forEach(request => {
+    if (request.status === 'pending' || request.status === 'accepted') {
+      activeRequests.push(request);
+    } else {
+      historyRequests.push({ ...request, isRequest: true });
+    }
+  });
+
+  // Separera trades baserat på status
+  const activeTrades = [];
+  const historyTrades = [];
+  
+  data.trades?.forEach(trade => {
+    if (trade.status === 'pending' || trade.status === 'accepted') {
+      activeTrades.push(trade);
+    } else {
+      historyTrades.push({ ...trade, isRequest: false });
+    }
+  });
+
+  // Visa aktiva requests (där användaren är requester)
+  console.log("📤 Displaying active requests:", activeRequests);
+  displayRequests(activeRequests, requestsContainer);
+
+  // Visa aktiva trades (där användaren är owner)
+  console.log("📥 Displaying active trades:", activeTrades);
+  displayTradesList(activeTrades, tradesContainer);
+
+  // Visa historik (både requests och trades som är avslutade)
+  const allHistory = [...historyRequests, ...historyTrades];
+  console.log("📚 Displaying history:", allHistory);
+  displayHistory(allHistory, historyContainer);
+}
+
+/**
+ * Visa requests (requester)
+ * @param {Array} requests - Lista över requests
+ * @param {HTMLElement} container - Container-element
+ */
+function displayRequests(requests, container) {
+  if (!Array.isArray(requests) || requests.length === 0) {
+    container.innerHTML = `<p class="empty-state">Inga förfrågningar än.</p>`;
+    return;
+  }
+
+  container.innerHTML = "";
+
+  requests.forEach((request) => {
+    const requestCard = createRequestCard(request, true);
+    container.appendChild(requestCard);
+  });
+}
+
+/**
+ * Visa trades (owner)
+ * @param {Array} trades - Lista över trades
+ * @param {HTMLElement} container - Container-element
+ */
+function displayTradesList(trades, container) {
+  if (!Array.isArray(trades) || trades.length === 0) {
+    container.innerHTML = `<p class="empty-state">Inga trades än.</p>`;
+    return;
+  }
+
+  container.innerHTML = "";
+
+  trades.forEach((trade) => {
+    const tradeCard = createRequestCard(trade, false);
+    container.appendChild(tradeCard);
+  });
+}
+
+/**
+ * Visa historik (avslutade requests och trades)
+ * @param {Array} historyItems - Lista över historikobjekt
+ * @param {HTMLElement} container - Container-element
+ */
+function displayHistory(historyItems, container) {
+  if (!Array.isArray(historyItems) || historyItems.length === 0) {
+    container.innerHTML = `<p class="empty-state">Ingen historik än.</p>`;
+    return;
+  }
+
+  // Sortera efter datum (nyast först)
+  historyItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  container.innerHTML = "";
+
+  historyItems.forEach((item) => {
+    const historyCard = createRequestCard(item, item.isRequest);
+    historyCard.style.opacity = "0.8"; // Gör historik lite mer transparent
+    container.appendChild(historyCard);
+  });
+}
+
+/**
+ * Skapa HTML-kort för request eller trade
+ * @param {object} trade - Trade-data
+ * @param {boolean} isRequest - Är detta en request (true) eller trade (false)
+ * @returns {HTMLElement} Kort-element
+ */
+function createRequestCard(trade, isRequest) {
+  const card = document.createElement("div");
+  card.className = "request-card";
+
+  const offeredPlant = trade.requesterPlantId || {};
+  const targetPlant = trade.ownerPlantId || {};
+  const offeredPlantName = offeredPlant.plantName || offeredPlant.name || "Växt";
+  const targetPlantName = targetPlant.plantName || targetPlant.name || "Växt";
+  const offeredPlantImage = offeredPlant.imageUrl || offeredPlant.image || "";
+  const targetPlantImage = targetPlant.imageUrl || targetPlant.image || "";
+  const status = trade.status || "pending";
+
+  const statusConfig = {
+    pending: { text: "⏳ Väntar", class: "status-pending" },
+    accepted: { text: "✅ Accepterad", class: "status-accepted" },
+    rejected: { text: "❌ Avvisad", class: "status-rejected" },
+    completed: { text: "✨ Slutförd", class: "status-completed" },
+    cancelled: { text: "🚫 Avbruten", class: "status-cancelled" }
+  };
+
+  const statusInfo = statusConfig[status] || statusConfig.pending;
+
+  card.innerHTML = `
+    <div class="request-card__header">
+      <h4>${isRequest ? '📤 Din förfrågan' : '📥 Inkommande trade'}</h4>
+      <span class="request-status ${statusInfo.class}">${statusInfo.text}</span>
+    </div>
+    
+    <div class="request-card__content">
+      <div class="request-card__plants">
+        <div class="request-plant-card">
+          <p class="request-plant-label">${isRequest ? 'Du erbjuder:' : 'De erbjuder:'}</p>
+          <div class="request-plant">
+            <div class="request-plant-image">
+              ${offeredPlantImage && offeredPlantImage !== "test2" 
+                ? `<img src="${offeredPlantImage}" alt="${offeredPlantName}" />`
+                : '<div class="plant-placeholder">🌱</div>'
+              }
+            </div>
+            <h5>${offeredPlantName}</h5>
+          </div>
+        </div>
+        
+        <div class="request-exchange-arrow">↔️</div>
+        
+        <div class="request-plant-card">
+          <p class="request-plant-label">${isRequest ? 'Du vill ha:' : 'Mot din:'}</p>
+          <div class="request-plant">
+            <div class="request-plant-image">
+              ${targetPlantImage && targetPlantImage !== "test2" 
+                ? `<img src="${targetPlantImage}" alt="${targetPlantName}" />`
+                : '<div class="plant-placeholder">🌱</div>'
+              }
+            </div>
+            <h5>${targetPlantName}</h5>
+          </div>
+        </div>
+      </div>
+      
+      <p class="request-from">
+        ${isRequest 
+          ? `Till: ${trade.ownerId?.name || trade.ownerId?.username || 'Okänd användare'}`
+          : `Från: ${trade.requesterId?.name || trade.requesterId?.username || 'Okänd användare'}`
+        }
+      </p>
+      
+      ${status === 'pending' ? `
+        <div class="request-card__actions">
+          ${isRequest ? `
+            <button class="btn-cancel-request" onclick="cancelRequest('${trade._id}')">
+              🚫 Avbryt
+            </button>
+          ` : `
+            <button class="btn-accept-request" onclick="handleAcceptTrade('${trade._id}')">
+              ✅ Acceptera
+            </button>
+            <button class="btn-reject-request" onclick="handleRejectTrade('${trade._id}')">
+              ❌ Avvisa
+            </button>
+          `}
+        </div>
+      ` : ''}
+      
+      ${status === 'accepted' && !isRequest ? `
+        <div class="request-card__actions">
+          <button class="btn-complete-trade" onclick="completeTrade('${trade._id}')">
+            ✨ Slutför trade
+          </button>
+        </div>
+      ` : ''}
+    </div>
+    
+    <div class="request-card__footer">
+      <small>${new Date(trade.createdAt).toLocaleDateString('sv-SE')}</small>
+    </div>
+  `;
+
+  return card;
+}
+
+/**
+ * Avbryt request (requester)
+ * @param {string} tradeId - Trade-ID
+ */
+async function cancelRequest(tradeId) {
+  if (!confirm("Är du säker på att du vill avbryta denna förfrågan?")) {
+    return;
+  }
+
+  try {
+    await cancelTrade(tradeId);
+    alert("✅ Förfrågan har avbrutits!");
+    
+    // Ladda om trades
+    await loadExchangeRequests();
+
+  } catch (error) {
+    console.error("Fel vid avbrytning av förfrågan:", error);
+    alert(`Kunde inte avbryta förfrågan: ${error.message}`);
+  }
+}
+
+/**
+ * Acceptera trade (owner)
+ * @param {string} tradeId - Trade-ID
+ */
+async function handleAcceptTrade(tradeId) {
+  if (!confirm("Är du säker på att du vill acceptera denna trade?")) {
+    return;
+  }
+
+  try {
+    await acceptTrade(tradeId);
+    alert("✅ Trade har accepterats!");
+    
+    // Ladda om trades
+    await loadExchangeRequests();
+
+  } catch (error) {
+    console.error("Fel vid accept av trade:", error);
+    alert(`Kunde inte acceptera trade: ${error.message}`);
+  }
+}
+
+/**
+ * Avvisa trade (owner)
+ * @param {string} tradeId - Trade-ID
+ */
+async function handleRejectTrade(tradeId) {
+  if (!confirm("Är du säker på att du vill avvisa denna trade?")) {
+    return;
+  }
+
+  try {
+    await rejectTrade(tradeId);
+    alert("✅ Trade har avvisats!");
+    
+    // Ladda om trades
+    await loadExchangeRequests();
+
+  } catch (error) {
+    console.error("Fel vid avvisning av trade:", error);
+    alert(`Kunde inte avvisa trade: ${error.message}`);
+  }
+}
+
+/**
+ * Slutför trade (owner)
+ * @param {string} tradeId - Trade-ID
+ */
+async function completeTradeRequest(tradeId) {
+  if (!confirm("Är du säker på att du vill slutföra denna trade?")) {
+    return;
+  }
+
+  try {
+    await completeTrade(tradeId);
+    alert("✨ Trade har slutförts!");
+    
+    // Ladda om trades
+    await loadExchangeRequests();
+
+  } catch (error) {
+    console.error("Fel vid slutförande av trade:", error);
+    alert(`Kunde inte slutföra trade: ${error.message}`);
   }
 }
 
@@ -538,3 +901,7 @@ function displayError(message) {
 window.editPlant = editPlant;
 window.deletePlantById = deletePlantById;
 window.cancelEdit = cancelEdit;
+window.cancelRequest = cancelRequest;
+window.handleAcceptTrade = handleAcceptTrade;
+window.handleRejectTrade = handleRejectTrade;
+window.completeTrade = completeTradeRequest;

@@ -16,7 +16,6 @@ const API_BASE_URL = "https://plot-twist-neon.vercel.app/api";
 export async function getAllPlants() {
   try {
     const response = await get("/plants");
-    console.log("API Response:", response);
     
     // Kontrollera om svaret innehåller en 'plants'-array
     if (response && response.plants && Array.isArray(response.plants)) {
@@ -228,6 +227,227 @@ export async function getUserInfo() {
     return response;
   } catch (error) {
     console.error("Fel vid hämtning av användarinformation:", error);
+    throw error;
+  }
+}
+
+/**
+ * Skapa bytesförfrågan (trade)
+ * @param {string} ownerPlantId - ID på växten man vill byta till (ägarens växt)
+ * @param {string} requesterPlantId - ID på egen växt att byta bort
+ * @returns {Promise} Skapad trade
+ */
+export async function createTrade(ownerPlantId, requesterPlantId) {
+  try {
+    const token = getToken();
+    if (!token) {
+      throw new Error("Du måste vara inloggad för att skicka en bytesförfrågan");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/trades`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        ownerPlantId,
+        requesterPlantId
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Kunde inte skapa bytesförfrågan");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Fel vid skapande av trade:", error);
+    throw error;
+  }
+}
+
+/**
+ * Hämta användarens trades (både requests och trades)
+ * @returns {Promise} Objekt med requests och trades arrays
+ */
+export async function getMyTrades() {
+  console.log("🔄 getMyTrades: Starting...");
+  try {
+    const token = getToken();
+    console.log("🔑 getMyTrades: Token exists:", !!token);
+    
+    if (!token) {
+      console.log("⚠️ getMyTrades: No token, returning empty arrays");
+      return { requests: [], trades: [] };
+    }
+
+    // Hämta requests (där användaren är requester)
+    console.log("📤 getMyTrades: Fetching requests (my-requests)...");
+    let requestsData = { trades: [] };
+    try {
+      requestsData = await get("/trades/my-requests", token);
+      console.log("✅ getMyTrades: Requests fetched successfully:", requestsData);
+    } catch (error) {
+      console.warn("⚠️ getMyTrades: Could not fetch requests:", error.message);
+    }
+    
+    const requests = requestsData.trades || [];
+    console.log("📤 getMyTrades: Requests (I asked for):", requests);
+
+    // Hämta trades (där användaren är owner)
+    console.log("📥 getMyTrades: Fetching trades (my-trades)...");
+    let tradesData = { trades: [] };
+    try {
+      tradesData = await get("/trades/my-trades", token);
+      console.log("✅ getMyTrades: Trades fetched successfully:", tradesData);
+    } catch (error) {
+      console.warn("⚠️ getMyTrades: Could not fetch trades:", error.message);
+    }
+    
+    const trades = tradesData.trades || [];
+    console.log("📥 getMyTrades: Trades (Others asked for):", trades);
+
+    const result = {
+      requests: requests,
+      trades: trades
+    };
+    console.log("🎯 getMyTrades: Final result:", result);
+    
+    return result;
+  } catch (error) {
+    console.error("❌ getMyTrades: Error:", error);
+    console.error("❌ getMyTrades: Error message:", error.message);
+    console.error("❌ getMyTrades: Error stack:", error.stack);
+    return { requests: [], trades: [] };
+  }
+}
+
+/**
+ * Acceptera en trade
+ * @param {string} tradeId - ID på trade
+ * @returns {Promise} Uppdaterad trade
+ */
+export async function acceptTrade(tradeId) {
+  try {
+    const token = getToken();
+    if (!token) {
+      throw new Error("Du måste vara inloggad");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/trades/my-trades/${tradeId}/accept`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Kunde inte acceptera trade");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Fel vid accept av trade:", error);
+    throw error;
+  }
+}
+
+/**
+ * Avvisa en trade
+ * @param {string} tradeId - ID på trade
+ * @returns {Promise} Uppdaterad trade
+ */
+export async function rejectTrade(tradeId) {
+  try {
+    const token = getToken();
+    if (!token) {
+      throw new Error("Du måste vara inloggad");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/trades/my-trades/${tradeId}/reject`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Kunde inte avvisa trade");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Fel vid avvisning av trade:", error);
+    throw error;
+  }
+}
+
+/**
+ * Avbryt en trade (requester)
+ * @param {string} tradeId - ID på trade
+ * @returns {Promise} Svarsmeddelande
+ */
+export async function cancelTrade(tradeId) {
+  try {
+    const token = getToken();
+    if (!token) {
+      throw new Error("Du måste vara inloggad");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/trades/my-trades/${tradeId}/cancel`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Kunde inte avbryta trade");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Fel vid avbrytning av trade:", error);
+    throw error;
+  }
+}
+
+/**
+ * Slutför en trade (owner)
+ * @param {string} tradeId - ID på trade
+ * @returns {Promise} Svarsmeddelande
+ */
+export async function completeTrade(tradeId) {
+  try {
+    const token = getToken();
+    if (!token) {
+      throw new Error("Du måste vara inloggad");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/trades/my-trades/${tradeId}/complete`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Kunde inte slutföra trade");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Fel vid slutförande av trade:", error);
     throw error;
   }
 }

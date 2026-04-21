@@ -29,12 +29,42 @@ export async function get(endpoint, token = null) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method: "GET",
-    headers,
-  });
+  console.log(`🌐 API GET: ${API_BASE_URL}${endpoint}`);
+  
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+      console.error(`⏱️ Timeout for ${endpoint}`);
+    }, 10000); // 10 second timeout
 
-  return response.json();
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: "GET",
+      headers,
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    console.log(`📡 Response status: ${response.status}`);
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(`❌ API Error ${response.status}:`, errorData);
+      throw new Error(errorData.message || `HTTP ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log(`✅ API Success:`, data);
+    return data;
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      console.error(`❌ API Timeout for ${endpoint}: Request took too long`);
+      throw new Error(`Request timeout for ${endpoint}`);
+    }
+    console.error(`❌ API Error for ${endpoint}:`, error);
+    throw error;
+  }
 }
 
 /**

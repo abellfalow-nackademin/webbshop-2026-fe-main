@@ -3,12 +3,14 @@
  * Hanterar visning av växter, karta och sökning
  */
 
-import { getAllPlants, searchPlants } from "../utils/productsApi.js";
+import { getAllPlants, searchPlants, getUserPlants } from "../utils/productsApi.js";
+import { isLoggedIn, getToken } from "../utils/auth.js";
 
 // Globala variabler
 let map = null;
 let allPlants = [];
 let markers = [];
+let userPlantIds = new Set();
 
 // Initiera sidan när den laddas
 document.addEventListener("DOMContentLoaded", initIndexPage);
@@ -21,6 +23,11 @@ async function initIndexPage() {
     // Initiera kartan
     initMap();
 
+    // Hämta användarens växter om inloggad
+    if (isLoggedIn()) {
+      await loadUserPlantIds();
+    }
+
     // Hämta alla växter
     await loadPlants();
 
@@ -30,6 +37,25 @@ async function initIndexPage() {
   } catch (error) {
     console.error("Fel vid initiering av startsidan:", error);
     displayError("Kunde inte ladda sidan. Försök igen senare.");
+  }
+}
+
+/**
+ * Hämta användarens växt-IDs
+ */
+async function loadUserPlantIds() {
+  try {
+    console.log("🔒 Användare är inloggad, hämtar användarens växter...");
+    const userPlants = await getUserPlants();
+    
+    // Spara växt-IDs i Set för snabb uppslagning
+    userPlantIds = new Set(userPlants.map(plant => plant._id || plant.id));
+    
+    console.log(`✅ Hittade ${userPlantIds.size} växter som tillhör användaren`);
+    console.log("🔒 User plant IDs:", Array.from(userPlantIds));
+  } catch (error) {
+    console.warn("⚠️ Kunde inte hämta användarens växter:", error);
+    userPlantIds = new Set();
   }
 }
 
@@ -135,13 +161,44 @@ function displayPlants(plants) {
     return;
   }
 
+  // Filtrera växter baserat på om användaren är inloggad
+  let filteredPlants = plants;
+  if (userPlantIds.size > 0) {
+    // Användare är inloggad - visa bara andras växter
+    filteredPlants = plants.filter(plant => {
+      const plantId = plant._id || plant.id;
+      const isUserPlant = userPlantIds.has(plantId);
+      
+      if (isUserPlant) {
+        console.log(`🔒 Hoppar över användarens egen växt: ${plant.plantName || plant.name} (${plantId})`);
+      }
+      
+      return !isUserPlant;
+    });
+    
+    console.log(`👁️ Filtrerade från ${plants.length} till ${filteredPlants.length} växter (exkluderar användarens egna)`);
+  } else {
+    console.log(`🌐 Användare är inte inloggad, visar alla ${plants.length} växter`);
+  }
+
   // Rensa container
   productsContainer.innerHTML = "";
+
+  if (filteredPlants.length === 0) {
+    productsContainer.innerHTML = `
+      <p style="text-align: center; padding: 2rem;">
+        ${userPlantIds.size > 0 
+          ? "Inga andra växter hittades än. Du ser bara andra användares växter när du är inloggad." 
+          : "Inga växter hittades."}
+      </p>
+    `;
+    return;
+  }
 
   let bounds = [];
 
   // Visa varje växt
-  plants.forEach((plant) => {
+  filteredPlants.forEach((plant) => {
     // Skapa växtkort
     const plantCard = createPlantCard(plant);
     productsContainer.appendChild(plantCard);
@@ -365,9 +422,8 @@ function sendExchangeRequest(plantId) {
     return;
   }
 
-  const plantName = plant.plantName || plant.name || "Växt";
-  // TODO: Implementera bytesförfrågan (kommer senare)
-  alert(`Bytesförfrågan för "${plantName}" kommer snart!`);
+  // Omdirigera till växtdetalj-sidan
+  window.location.href = `plant-details.html?id=${plantId}`;
 }
 
 /**
@@ -382,9 +438,8 @@ function showPlantDetails(plantId) {
     return;
   }
 
-  const plantName = plant.plantName || plant.name || "Växt";
-  // TODO: Implementera detaljsida
-  alert(`Detaljer för "${plantName}" kommer snart!`);
+  // Omdirigera till växtdetalj-sidan
+  window.location.href = `plant-details.html?id=${plantId}`;
 }
 
 /**
