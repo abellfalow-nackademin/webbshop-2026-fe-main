@@ -178,6 +178,13 @@ function initMap() {
     <p>${plantDetails.description}</p>
     </div
     `);
+      marker.on("popupopen", function (e) {
+    map.panTo([latitude, longitude], { animate: true });
+
+    setTimeout(() => {
+      map.panBy([0, -150], { animate: true });
+    }, 300); // justera timing här
+  });
 }
 
 /**
